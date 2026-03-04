@@ -123,7 +123,7 @@ for test_year in all_years:
     mse_xgb = mean_squared_error(y_test_scaled - y_pred_en_test, residuals_pred_test)
     
     spearman_en = spearmanr(y_test_scaled, y_pred_en_test).correlation
-    spearman_xgb = spearmanr(y_test_scaled - y_pred_en_test, residuals_pred_test).correlation
+    spearman_xgb = spearmanr(y_test_scaled - y_pred_en_test, residuals_pred_test).correlation # is XG overfitting creating near perfect results 
     
     print(f"Year {test_year}: ElasticNet MSE={mse_en:.4f}, Spearman={spearman_en:.4f}")
     print(f"Year {test_year}: XGBoost MSE={mse_xgb:.4f}, Spearman={spearman_xgb:.4f}")
