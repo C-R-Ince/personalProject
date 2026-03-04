@@ -9,6 +9,7 @@ from sklearn.impute import SimpleImputer
 from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error
 from scipy.stats import spearmanr
+import matplotlib as plt
 
 startYear = 2015
 curYear = startYear
@@ -146,3 +147,15 @@ dfResults['Efficiency_Percentile'] = dfResults.groupby('year')['Residual'].rank(
 
 # Output
 print(dfResults[['Team','year','Pos','Predicted_Pos','Residual','Residual_Rolling3','Efficiency_Percentile']])
+
+# Get coefficients
+# Sanity check 
+#print(len(en.coef_))
+#print(len(numeric_cols))
+coef_df = pd.Series(en.coef_, index=numeric_cols)
+
+# Plot coefficients
+coef_df.sort_values().plot(kind="barh")
+plt.title("Elastic Net Coefficients")
+plt.xlabel("Coefficient Value")
+plt.show()
