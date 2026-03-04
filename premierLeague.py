@@ -141,7 +141,7 @@ dfResults['Residual_Rolling3'] = dfResults.groupby('Team')['Residual'].transform
     lambda x: x.rolling(3, min_periods=1).mean()
 )
 
-# Efficiency percentage
+# Efficiency percentage (currently calculates relative to club)
 dfResults['Efficiency_Percentile'] = dfResults.groupby('year')['Residual'].rank(pct=True, ascending=False)
 
 # Output
