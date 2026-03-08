@@ -10,6 +10,7 @@ from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error
 from scipy.stats import spearmanr
 import matplotlib as plt
+import argparse
 
 startYear = 2015
 curYear = startYear
@@ -71,6 +72,11 @@ numeric_cols = ['net_debt','net_spend','player_signings','profit_loss_after_tax'
 data[numeric_cols] = data[numeric_cols].apply(pd.to_numeric, errors='coerce')
 data['Pos'] = pd.to_numeric(data['Pos'], errors='coerce')
 data['year'] = pd.to_numeric(data['year'], errors='coerce')
+
+# Argument parser
+parser = argparse.ArgumentParser()
+parser.add_argument("-t", "--team", type=str, help=f'Specify team of interest. Please use quotation marks and choose from: {", ".join(clubs)}')
+args = parser.parse_args()
 
 
 results = []
@@ -159,3 +165,22 @@ coef_df.sort_values().plot(kind="barh")
 plt.title("Elastic Net Coefficients")
 plt.xlabel("Coefficient Value")
 plt.show()
+
+# Check if team is specified
+if args.team is not None:
+    team_coef = dfResults[dfResults["Team"] == args.team]
+    print(team_coef)
+
+    fig, ax = plt.subplots(figsize=(10,6))
+
+    ax.set_title(f"Team {args.team} Coefficients Over Years")
+    ax.set_xlabel("Year")
+    ax.set_ylabel("Values")
+
+    ax.invert_yaxis()
+
+    ax.plot(team_coef["year"], team_coef["Pos"], label="Position")
+    ax.plot(team_coef["year"], team_coef["Predicted_Pos"], label="Predicted Pos")
+
+    ax.legend()
+    plt.show()
