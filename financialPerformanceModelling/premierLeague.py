@@ -9,7 +9,7 @@ from sklearn.impute import SimpleImputer
 from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error
 from scipy.stats import spearmanr
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import argparse
 
 startYear = 2015
@@ -35,37 +35,36 @@ while i < (noYears-1):
     clubs = list(leagueTable['Team'])
 
     for club in clubs:
-        if club == "Bournemouth":
-            club = "afc-bournemouth"
-        else:
-            url = f"https://kinnaird-si-production.up.railway.app/api/clubs/{club}/dashboard-data?year={curYear}"
-            headers = {"User-Agent": "Mozilla/5.0"}
-            response = requests.get(url, headers=headers)
-            data = response.json()
-            if "competitive_positions" not in data:
-                #Skip those not in Kinnaird premier league will add championship later
-                continue 
-            # Competitive positions
-            competitiveDf = pd.DataFrame(data["competitive_positions"]).T
-            competitiveDf["Team"] = club
-            competitiveDf["rankedExpense"] = competitiveDf.index
-            mergeTable = pd.merge(leagueTable, competitiveDf, left_on = "Team", right_on = "Team")
-            mergeTable = mergeTable[["Pos", "Team", "rankedExpense", "ranking"]]
-            mergeTable = (
-                mergeTable
-                .pivot(index=["Pos", "Team"], 
-                       columns="rankedExpense", 
-                       values="ranking")
-                .reset_index()
-            )
-            mergeTable.columns.name = None
-            clubYear.append(mergeTable)
+        apiClub = "afc-bournemouth" if club == "Bournemouth" else club
+
+        url = f"https://kinnaird-si-production.up.railway.app/api/clubs/{apiClub}/dashboard-data?year={curYear}"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        if "competitive_positions" not in data:
+            #Skip those not in Kinnaird premier league will add championship later
+            continue 
+        # Competitive positions
+        competitiveDf = pd.DataFrame(data["competitive_positions"]).T
+        competitiveDf["Team"] = club
+        competitiveDf["rankedExpense"] = competitiveDf.index
+        mergeTable = pd.merge(leagueTable, competitiveDf, left_on = "Team", right_on = "Team")
+        mergeTable = mergeTable[["Pos", "Team", "rankedExpense", "ranking"]]
+        mergeTable = (
+            mergeTable
+            .pivot(index=["Pos", "Team"], 
+                    columns="rankedExpense", 
+                    values="ranking")
+            .reset_index()
+        )
+        mergeTable.columns.name = None
+        clubYear.append(mergeTable)
     leagueFin = pd.concat(clubYear, ignore_index=True)
     leagueFin["year"] = curYear
     leagueFin = leagueFin.drop("kinnaird_valuation", axis=1)
     totalFin = pd.concat([totalFin, leagueFin], ignore_index=True)
     i += 1
-data = totalFin.dropna()
+data = totalFin.dropna().copy()
 numeric_cols = ['net_debt','net_spend','player_signings','profit_loss_after_tax','staff_costs','total_income']
 
 # Ensure numeric & handle NaNs
